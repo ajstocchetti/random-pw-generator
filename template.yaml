@@ -1,0 +1,90 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+
+Description: 'Password generation API'
+
+Parameters:
+  StageName:
+    Type: String
+    Description: Stage name for the API Gateway
+    Default: stage
+
+Resources:
+  TheApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: !Ref StageName
+      Name: "Random Password Generator"
+      Cors: "'*'"
+      DefinitionBody:
+        swagger: "2.0"
+        schemes:
+          - https
+        consumes:
+          - "application/json"
+        produces:
+          - "application/json"
+        paths:
+          /:
+            options:
+              responses:
+                '200':
+                  headers:
+                    Access-Control-Allow-Origin:
+                      type: string
+                    Access-Control-Allow-Methods:
+                      type: string
+                    Access-Control-Allow-Headers:
+                      type: string
+              x-amazon-apigateway-integration:
+                responses:
+                  default:
+                    statusCode: 200
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Methods: "'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT'"
+                      method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+                      method.response.header.Access-Control-Allow-Origin: "'*'"
+                passthroughBehavior: when_no_match
+                requestTemplates:
+                  application/json: '{"statusCode": 200}'
+                type: mock
+            get:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                passthroughBehavior: when_no_match
+                type: aws_proxy
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${TheLambda}/invocations"
+
+  TheLambda:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: lambda.handler
+      Runtime: nodejs8.10
+      CodeUri: ./
+      MemorySize: 128
+      Timeout: 5
+      Tracing: PassThrough
+      Policies:
+        - AWSLambdaBasicExecutionRole
+      Events:
+        ApiEvents:
+          Type: Api
+          Properties:
+            RestApiId: !Ref TheApi
+            Path: /*
+            Method: any
+
+  InvokeApiPermission:
+    Type: "AWS::Lambda::Permission"
+    DependsOn:
+    - TheLambda
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref TheLambda
+      Principal: apigateway.amazonaws.com
+
+
+Outputs:
+  ApiUrl:
+    Description: "Base URL for API stage"
+    Value: !Sub 'https://${TheApi}.execute-api.${AWS::Region}.amazonaws.com/${StageName}'
