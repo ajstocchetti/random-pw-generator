@@ -1,6 +1,17 @@
-const {makePassword} = require('./generator');
+const {makePassword, makeNonWordPw} = require('./generator');
 
-exports.handler = async () => ({
+exports.handler = () => ({
   statusCode: 200,
-  body: JSON.stringify({password:makePassword()}),
+  body: JSON.stringify([
+    makePassword(),
+    makeNonWordPw(),
+    makePassword(),
+    makeNonWordPw(),
+    makePassword(),
+    makeNonWordPw(),
+    makePassword(),
+    makeNonWordPw(),
+    makePassword(),
+    makeNonWordPw(),
+  ]),
 });

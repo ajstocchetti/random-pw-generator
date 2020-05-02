@@ -8,10 +8,12 @@ const words = fs.readFileSync(fn, 'utf-8').split('\n');
 
 module.exports = {
   makePassword,
+  makeNonWordPw,
   getWord,
   titleCase,
   randomDigit,
   randSymbol,
+  randChar,
 };
 
 function getWord(min=4, max=8) {
@@ -33,13 +35,40 @@ function randSymbol() {
   return a[Math.floor(Math.random() * a.length)];
 }
 
+function randChar(isCap = false) {
+  const alphabet = 'abcdefghijklmnopqrstuvwzyz';
+  const char = alphabet[Math.floor(Math.random() * alphabet.length)];
+  return isCap ? char.toUpperCase() : char;
+}
+
+function makeNonWordPw(maxLength = 24) {
+  const chars = [
+    randChar(),
+    randChar(),
+    ...getWord(4, 16),
+    ...getWord(4, 16),
+    ...getWord(4, 16),
+    ...getWord(4, 16),
+  ];
+  if (chars.length > maxLength) chars.length = maxLength; // truncate to 20 chars
+
+  for (let x = 1; x < chars.length - 1; x++) {
+    const r = randomDigit();
+    if (r < 0.05) chars[x] = randSymbol();
+    else if (r < 0.15) chars[x] = randomDigit();
+    else if (r < 0.3) chars[x] = randChar(true);
+  }
+
+  return chars.join('');
+}
+
 function makePassword() {
   return [
     titleCase(getWord()),
     titleCase(getWord()),
     titleCase(getWord()),
-    titleCase(getWord()),
     randomDigit(),
     randSymbol(),
+    titleCase(getWord()),
   ].join('');
 }
