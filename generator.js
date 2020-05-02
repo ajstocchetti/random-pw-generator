@@ -16,8 +16,17 @@ module.exports = {
   randChar,
 };
 
+function randRange(limit) {
+  // allow passing in number, string, or array
+  // this is a little hacky, and will probaly break with other variable types
+
+  // will return integer in range [0, limit)
+  const range = limit.hasOwnProperty('length') ? limit.length : limit;
+  return Math.floor(Math.random() * range);
+}
+
 function getWord(min=4, max=8) {
-  const w = words[Math.floor(Math.random()*words.length)].trim();
+  const w = words[randRange(words)].trim();
   if (w.length < min || w.length > max) return getWord(min, max);
   else return w;
 }
@@ -27,17 +36,17 @@ function titleCase(str) {
 }
 
 function randomDigit() {
-  return Math.floor(Math.random() * 10);
+  return randRange(10);
 }
 
 function randSymbol() {
   const a = '!@#$%^&*()|'.split('');
-  return a[Math.floor(Math.random() * a.length)];
+  return a[randRange(a)];
 }
 
 function randChar(isCap = false) {
   const alphabet = 'abcdefghijklmnopqrstuvwzyz';
-  const char = alphabet[Math.floor(Math.random() * alphabet.length)];
+  const char = alphabet[randRange(alphabet)];
   return isCap ? char.toUpperCase() : char;
 }
 
@@ -53,10 +62,11 @@ function makeNonWordPw(maxLength = 24) {
   if (chars.length > maxLength) chars.length = maxLength; // truncate to 20 chars
 
   for (let x = 1; x < chars.length - 1; x++) {
-    const r = randomDigit();
-    if (r < 0.05) chars[x] = randSymbol();
-    else if (r < 0.15) chars[x] = randomDigit();
-    else if (r < 0.3) chars[x] = randChar(true);
+    const r = Math.random();
+    if (r < 0.08) chars[x] = randSymbol();
+    else if (r < 0.2) chars[x] = randomDigit();
+    else if (r < 0.45) chars[x] = randChar(true);
+    else if (r < 0.6) chars[x] = randChar();
   }
 
   return chars.join('');
