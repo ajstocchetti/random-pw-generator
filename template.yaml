@@ -59,7 +59,7 @@ Resources:
     Type: 'AWS::Serverless::Function'
     Properties:
       Handler: lambda.handler
-      Runtime: nodejs8.10
+      Runtime: nodejs12.x
       CodeUri: ./
       MemorySize: 128
       Timeout: 5
